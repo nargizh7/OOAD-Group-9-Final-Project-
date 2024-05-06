@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+</head>
+<body>
+    <div class="top-menu">
+        <div class="time" id="time"></div>
+        <div class="logout" onclick="window.location.href='/login'">Log out</div>
+    </div>
+    <div class="sidebar">
+        <button class="nav-button" id="view-accounts" onclick="window.location.href='/view_accounts'">View Accounts</button>
+        <button class="nav-button" id="add-payment">Add Payment Method</button>
+        <button class="nav-button" onclick="location.href='{{ url_for('transaction_history') }}'">Transaction History</button>
+        <button class="nav-button" id="make-payment" onclick="window.location.href='/make_payment'">Make Payment</button>
+        <button class="nav-button" id="payment-options" onclick="window.location.href='/payment_options'">Payment</button>
+        <button class="nav-button" id="subscriptions" onclick="window.location.href='/subscriptions'">Subscriptions</button>
+        <button class="nav-button" id="add-subscription" onclick="window.location.href='/add_subscription'">Add Subscription</button>
+        <div class="settings">
+            <span class="material-icons">Settings</span>
+        </div>
+    </div>
+    <div class="main-content">
+        <header>
+            <!-- Optional header content can go here -->
+        </header>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div>{{ message }}</div>
+                    {% endfor %}
+                 </div>
+            {% endif %}
+        {% endwith %}
+        <div class="content">
+            <img src="{{ url_for('static', filename='images/card.png') }}" alt="Example Image" class="card-image">
+            <div class="form-section">
+                <h2>Add Payment Method</h2>
+                <form id="paymentForm" action="/" method="post">
+                    <div class="form-group">
+                        <label for="name">Name on the card</label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Nuray Gurbanova" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" name="cardNumber" placeholder="e.g. 1234 5678 1234 5678" required>
+                    </div>
+                    <div class="form-group half-width">
+                        <label for="expiry">Valid Until</label>
+                        <input type="text" id="expiry" name="expiry" placeholder="MM/YY" required>
+                    </div>
+                    <div class="form-group half-width">
+                        <label for="cvv">CVV</label>
+                        <input type="text" id="cvv" name="cvv" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="submit-btn">Add now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
