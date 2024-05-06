@@ -4,6 +4,7 @@ import mysql.connector
 from mysql.connector import Error
 import bcrypt
 from functools import wraps
+import datetime
 
 
 app = Flask(__name__)
@@ -109,7 +110,7 @@ class MoneyAccount:
         conn = DBConnection.create_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT name, payment_method, expiry_date, account_id FROM MoneyAccount")
+            cursor.execute("SELECT name, payment_method, expiry_date, balance, currency, account_id FROM MoneyAccount")
             payment_methods = cursor.fetchall()
         except Error as e:
             flash('Error fetching payment methods: ' + str(e))
@@ -118,6 +119,7 @@ class MoneyAccount:
             cursor.close()
             conn.close()
         return payment_methods
+
 
     @staticmethod
     def delete_payment_method(account_id):
@@ -158,36 +160,22 @@ class Payment:
         print("Payment record added successfully")
 
 
-# class PaymentForm(MethodView):
-#     def get(self):
-#         payment_methods = MoneyAccount.get_all_payment_methods()
-#         return render_template('payment.html', payment_methods=payment_methods)
-
-#     def post(self):
-#         user_id = request.form['userID']
-#         amount = request.form['amount']
-#         currency_id = request.form['currencyID']
-#         status_id = request.form['statusID']
-#         transfer_details = request.form['transferDetails']
-#         payment_method_id = request.form['paymentMethodID']
-
-#         payment = Payment(user_id, amount, currency_id, status_id, transfer_details, payment_method_id)
-#         payment.create_payment()
-
-#         flash('Payment made successfully!')
-#         return redirect(url_for('paymentform'))
 class PaymentMethodForm(MethodView):
     @login_required
     def get(self):
-        return render_template('index.html')
+        payment_methods = MoneyAccount.view_payment_methods()  # Fetch payment methods
+        return render_template('add_payment.html', payment_methods=payment_methods)
 
     def post(self):
         name = request.form['name']
         card_number = request.form['cardNumber']
         expiry_date = request.form['expiry']
+        balance = request.form['balance']  # Assume you handle balance input in your form
+        currency = request.form['currency']  # Assume you handle currency input in your form
         account = MoneyAccount()
-        account.add_payment_method(name, card_number, expiry_date)
+        account.add_payment_method(name, card_number, expiry_date, balance, currency)
         return redirect(url_for('paymentmethodform'))
+
 
 class RegisterView(MethodView):
     def get(self):
@@ -207,7 +195,7 @@ class RegisterView(MethodView):
         if user.register(full_name, password):
             session['user_id'] = user.login(password)
             flash('You have successfully registered!')
-            return redirect(url_for('paymentmethodform'))
+            return redirect(url_for('login'))
         else:
             flash('Registration failed. Please try again.')
 
@@ -226,10 +214,35 @@ class LoginView(MethodView):
         user_id = user.login(password)
         if user_id:
             session['user_id'] = user_id
-            return redirect(url_for('paymentmethodform'))
+            return redirect(url_for('transaction_history'))
         else:
             flash('Email or password is not correct.')
         return render_template('login.html')
+
+   
+class WelcomePage(MethodView):
+    @login_required
+    def get(self):
+        # Here you can add any logic to fetch transaction data if needed
+        return render_template('index.html')
+    
+class InquiryView(MethodView):
+    @login_required
+    def get(self):
+        # Here you can add any logic to fetch transaction data if needed
+        return render_template('inquiry.html')
+    
+class PaymentMethodsView(MethodView):
+    @login_required
+    def get(self):
+        payment_methods = MoneyAccount.view_payment_methods()
+        return render_template('view_accounts.html', payment_methods=payment_methods)
+
+class DeletePaymentMethodView(MethodView):
+    @login_required
+    def post(self, account_id):
+        MoneyAccount.delete_payment_method(account_id)
+        return redirect(url_for('payment_methods_view'))
 
 
 class TransactionHistory(MethodView):
@@ -294,21 +307,32 @@ class Subscription:
     def create_subscription(userID, service, paymentFrequency):
         conn = DBConnection.create_connection()
         cursor = conn.cursor()
+
+        # Get the current date and calculate renews_at based on paymentFrequency
+        now = datetime.datetime.now()
+        if paymentFrequency == 'Monthly':
+            renews_at = now + datetime.timedelta(days=30)  # Approximately one month
+        elif paymentFrequency == 'Quarterly':
+            renews_at = now + datetime.timedelta(days=120)  # Approximately four months
+        else:  # Assuming 'Yearly'
+            renews_at = now + datetime.timedelta(days=365)  # Approximately one year
+
         query = """
-        INSERT INTO Subscription (userID, service, paymentFrequency, active)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO Subscription (userID, service, paymentFrequency, active, renews_at)
+        VALUES (%s, %s, %s, %s, %s)
         """
-        cursor.execute(query, (userID, service, paymentFrequency, True))
+        cursor.execute(query, (userID, service, paymentFrequency, True, renews_at))
         conn.commit()
         cursor.close()
         conn.close()
 
+    
     @staticmethod
     def get_subscriptions_by_user(userID):
         conn = DBConnection.create_connection()
         cursor = conn.cursor()
         query = """
-        SELECT subscriptionID, service, paymentFrequency, active
+        SELECT subscriptionID, service, paymentFrequency, active, renews_at
         FROM Subscription
         WHERE userID = %s
         ORDER BY subscriptionID DESC
@@ -318,6 +342,20 @@ class Subscription:
         cursor.close()
         conn.close()
         return subscriptions
+    def delete_subscription(subscription_id):
+        conn = DBConnection.create_connection()
+        if conn:
+            cursor = conn.cursor()
+            try:
+                cursor.execute("DELETE FROM Subscription WHERE subscriptionID = %s", (subscription_id,))
+                conn.commit()
+                return True
+            except Error as e:
+                return False
+            finally:
+                cursor.close()
+                conn.close()
+
 
 
 class SubscriptionsView(MethodView):
@@ -363,7 +401,19 @@ class ActivateSubscriptionView(MethodView):
         flash('Subscription activated successfully!')
         return redirect(url_for('subscriptions'))
 
+class DeleteSubscriptionView(MethodView):
+    decorators = [login_required]  # Ensure the user is logged in
 
+    def post(self, subscription_id):
+        try:
+            if Subscription.delete_subscription(subscription_id):
+                flash('Subscription successfully deleted.', 'success')
+            else:
+                flash('Failed to delete subscription.', 'error')
+        except Exception as e:
+            flash(f'Error during deletion: {str(e)}', 'error')
+        
+        return redirect(url_for('subscriptions'))
 
     
 class PaymentMethodsView(MethodView):
@@ -382,13 +432,11 @@ class DeletePaymentMethodView(MethodView):
 class MakePaymentView(MethodView):
     @login_required
     def get(self):
-        payment_methods = MoneyAccount.view_payment_methods()
-        return render_template('make_payment.html', payment_methods=payment_methods)
+        return render_template('make_payment.html')
 
-    @login_required
     def post(self):
         user_id = session['user_id']
-        account_id = request.form['payment_method']
+        account_number = request.form['account_number']
         amount = float(request.form['amount'])
         description = request.form['description']
 
@@ -403,23 +451,9 @@ class MakePaymentView(MethodView):
             flash('Insufficient balance to complete the transaction.')
             return redirect(url_for('make_payment'))
 
-        # Get the payment method details
-        conn = DBConnection.create_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT name, payment_method FROM MoneyAccount WHERE account_id = %s", (account_id,))
-        payment_method = cursor.fetchone()
-        cursor.close()
-        conn.close()
-
-        if not payment_method:
-            flash('Invalid payment method selected.')
-            return redirect(url_for('make_payment'))
-
-        account_name, card_number = payment_method
-
         # Create a transaction for the payment
         try:
-            self.create_payment_transaction(user_id, card_number, -amount, f'Payment to Card Ending: {card_number[-4:]}, {description}')
+            self.create_payment_transaction(user_id, account_number, amount, description)
             flash('Payment successful!')
         except Exception as e:
             flash(f'Error in processing payment: {str(e)}')
@@ -447,69 +481,20 @@ class MakePaymentView(MethodView):
         INSERT INTO Transaction (user_id, transaction_details, amount, creation_timestamp)
         VALUES (%s, %s, %s, NOW())
         """
-        cursor.execute(query, (user_id, f'{description}', amount))
+        cursor.execute(query, (user_id, f'Payment to Card Ending: {account_number[-4:]}, {description}', -amount))
         conn.commit()
         cursor.close()
         conn.close()
 
 
 
-class PaymentOptionsView(MethodView):
-    @login_required
-    def get(self):
-        return render_template('payment_options.html')
-
-    @login_required
-    def post(self):
-        user_id = session['user_id']
-        payment_type = request.form['payment_type']
-        number = request.form['number']
-        amount = float(request.form['amount'])
-        description = request.form.get('description', '')
-
-        # Determine the transaction details based on the payment type
-        if payment_type == "electricity":
-            transaction_details = f"Electricity Payment to Account: {number}"
-        elif payment_type == "water":
-            transaction_details = f"Water Payment to Account: {number}"
-        elif payment_type == "phone_balance":
-            transaction_details = f"Phone Balance Top-Up to Number: {number}"
-        else:
-            flash("Invalid Payment Type")
-            return redirect(url_for('payment_options'))
-
-        # Ensure the amount is positive
-        if amount <= 0:
-            flash('Amount must be greater than zero.')
-            return redirect(url_for('payment_options'))
-
-        # Check if the user has sufficient balance
-        balance = MakePaymentView.get_balance_by_user(user_id)
-        if balance < amount:
-            flash('Insufficient balance to complete the transaction.')
-            return redirect(url_for('payment_options'))
-
-        # Create a transaction for the payment
-        try:
-            MakePaymentView.create_payment_transaction(user_id, number, -amount, f"{transaction_details}, {description}")
-            flash('Payment successful!')
-        except Exception as e:
-            flash(f'Error in processing payment: {str(e)}')
-
-        return redirect(url_for('transaction_history'))
 
 
-# Register the new view
-app.add_url_rule('/payment_options', view_func=PaymentOptionsView.as_view('payment_options'))
-
-
-
-
-
-
-app.add_url_rule('/', view_func=PaymentMethodForm.as_view('paymentmethodform'))
+app.add_url_rule('/', view_func=WelcomePage.as_view('welcome'))
+app.add_url_rule('/inquiry', view_func=InquiryView.as_view('inquiry_view'))
 app.add_url_rule('/register', view_func=RegisterView.as_view('register'))
 app.add_url_rule('/login', view_func=LoginView.as_view('login'))
+app.add_url_rule('/add_payment', view_func=PaymentMethodForm.as_view('add_payment'))
 app.add_url_rule('/transaction_history', view_func=TransactionHistory.as_view('transaction_history'))
 app.add_url_rule('/view_accounts', view_func=PaymentMethodsView.as_view('payment_methods_view'))
 app.add_url_rule('/delete_payment_method/<int:account_id>', view_func=DeletePaymentMethodView.as_view('delete_payment_method'), methods=['POST'])
@@ -518,8 +503,7 @@ app.add_url_rule('/subscriptions', view_func=SubscriptionsView.as_view('subscrip
 app.add_url_rule('/add_subscription', view_func=AddSubscriptionView.as_view('add_subscription'))
 app.add_url_rule('/cancel_subscription/<int:subscription_id>', view_func=CancelSubscriptionView.as_view('cancel_subscription'), methods=['POST'])
 app.add_url_rule('/activate_subscription/<int:subscription_id>', view_func=ActivateSubscriptionView.as_view('activate_subscription'), methods=['POST'])
-
-
+app.add_url_rule('/delete_subscription/<int:subscription_id>', view_func=DeleteSubscriptionView.as_view('delete_subscription'), methods=['POST'])
 
 
 

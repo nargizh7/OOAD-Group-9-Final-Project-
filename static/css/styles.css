@@ -72,6 +72,12 @@ body, html {
     cursor: pointer;
 }
 
+.user {
+    margin-right: 5px;
+    text-decoration: underline;
+    position: initial;
+}
+
 #add-payment, .nav-button:hover, .settings:hover {
     background-color: #298D37;
     color: white;

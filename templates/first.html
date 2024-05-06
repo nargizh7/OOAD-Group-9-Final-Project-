@@ -17,18 +17,15 @@
         }
 
         .container {
-            padding-right: 10%; /* Adds padding to the right, pushing content to the left */
             display: flex;
             align-items: center;
             justify-content: space-between;
-            width: 80%;
-            max-width: 1200px;
+            width: 80%; /* Adjust width as needed */
+            max-width: 1200px; /* Maximum width */
         }
-
 
         .text-section {
             flex-basis: 50%;
-            
         }
 
         .image-section {
@@ -39,12 +36,12 @@
         }
 
         .image-section img {
-            width: 140%; /* Adjust image size as necessary */
-            
+            width: 100%; /* Adjust image size as necessary */
+            max-width: 500px; /* Maximum image width */
         }
 
         h1 {
-            font-size: 30px;
+            font-size: 24px;
             color: #333;
             margin-bottom: 20px;
         }
@@ -72,11 +69,11 @@
     <div class="container">
         <div class="text-section">
             <h1>Welcome to Team 9 Online Payment System!</h1>
-            <a href="/login" class="button">Login</a>
-            <a href="/register" class="button">Sign Up</a>
+            <a href="{{ url_for('login') }}" class="button">Login</a>
+            <a href="{{ url_for('register') }}" class="button">Sign Up</a>
         </div>
         <div class="image-section">
-            <img src="{{ url_for('static', filename='images/payment.png') }}" alt="Payment System" class="payment-icon">
+            <img src="payment.png" alt="Payment System">
         </div>
     </div>
 </body>

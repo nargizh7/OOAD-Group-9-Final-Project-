@@ -59,6 +59,9 @@
             margin-bottom: 10px;
         }
 
+        .nav-button {
+            margin: 5px;
+        }
         .nav-button:hover, .settings:hover {
             background-color: #298D37;
             color: white;
@@ -80,7 +83,7 @@
             margin-top: 60px;
             display: flex;
             flex-direction: column;
-            width: 800px;
+            width: 1000px;
             margin-left: 50px;
         }
 
@@ -97,8 +100,13 @@
             align-items: flex-start;
         }
         
+        .user {
+            text-decoration: underline;
+            cursor: pointer;
+        
+        }
         .logout {
-            margin-right: 5px;
+            margin-right: 10px;
             text-decoration: underline;
             cursor: pointer;
         }
@@ -117,6 +125,15 @@
 
         .remove-btn:hover {
             background-color: #ffaaaa; /* Slightly darker red on hover */
+        }
+
+        #view {
+            background-color: #298D37; /* Green background */
+            color: white; /* White text */
+        }
+
+        #view:hover {
+            background-color: #3CA64E;
         }
 
         .payment-list {
@@ -159,7 +176,7 @@
         }
 
         .label {
-            color: #298D37; /* Green color for labels */
+            color: #11661c; /* Green color for labels */
             font-weight: bold; /* Optional: makes the label bold */
         }
 
@@ -170,18 +187,17 @@
 </head>
 <body>
     <div class="top-menu">
-        <div class="time" id="time"></div>
+        <div class="user">charles.leclerc@gmail.com</div>
         <div class="logout" onclick="window.location.href='/login'">Log out</div>
-        <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
     </div>
     <div class="sidebar">
-        <button class="nav-button" id="view_accounts">View Accounts</button>
-        <button class="nav-button" onclick="window.location.href='/'">Add Payment Method</button>
-        <button class="nav-button" onclick="window.location.href='/transaction_history'">Transaction History</button>
-        <button class="nav-button" onclick="window.location.href='/make_payment'">Make Payment</button>
-        <button class="nav-button" id="payment-options" onclick="window.location.href='/payment_options'">Payment</button>
+        <button class="nav-button" id="transaction-history" onclick="window.location.href='/transaction_history'">Transaction History</button>
+        <button class="nav-button" id="make-payment" onclick="window.location.href='/make_payment'">Make Payment</button>
+        <button class="nav-button" id = "view" onclick="window.location.href='/view_accounts'">View Accounts</button>
         <button class="nav-button" id="subscriptions" onclick="window.location.href='/subscriptions'">Subscriptions</button>
+        <button class="nav-button" onclick="window.location.href='/add_payment'">Add Payment Method</button>
         <button class="nav-button" id="add-subscription" onclick="window.location.href='/add_subscription'">Add Subscription</button>
+        <button class="nav-button" id="inquiry" onclick="window.location.href='/inquiry'">Create Inquiry</button>
         <div class="settings">
             <span class="material-icons">Settings</span>
         </div>
@@ -203,13 +219,15 @@
         </header>
         <div class="content">
             <ul class="payment-list">
-                {% for name, payment_method, expiry_date, account_id in payment_methods %}
+                {% for name, payment_method, expiry_date, balance, currency, account_id in payment_methods %}
                 <li>
                     <img src="{{ url_for('static', filename='images/visa.png') }}" alt="Visa Card" class="payment-icon">
                     <div class="payment-details">
                         <div><span class="label">Name on card:</span> <span class="value">{{ name }}</span></div>
                         <div><span class="label">Card number:</span> <span class="value">{{ payment_method }}</span></div>
                         <div><span class="label">Expiry date:</span> <span class="value">{{ expiry_date }}</span></div>
+                        <div><span class="label">Balance:</span> <span class="value">{{ balance }}</span></div>
+                        <div><span class="label">Currency:</span> <span class="value">{{ currency }}</span></div>
                     </div>
                     <form action="{{ url_for('delete_payment_method', account_id=account_id) }}" method="post">
                         <button type="submit" class="remove-btn">Remove Payment Method</button>
@@ -219,9 +237,8 @@
                 <li>No payment methods found.</li>
                 {% endfor %}
             </ul>
-            
-            
         </div>
+        
     </div>
 </body>
 </html>

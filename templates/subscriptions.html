@@ -31,7 +31,7 @@
             z-index: 1000;
         }
         .logout {
-            margin-right: 5px;
+            margin-right: 10px;
             text-decoration: underline;
             cursor: pointer;
         }
@@ -63,12 +63,20 @@
             align-items: center;
         }
 
-        #subscriptions, #add-subscription {
+        .nav-button {
+            margin: 5px;
+        }
+        .nav-button:hover, .settings:hover {
+            background-color: #298D37;
+            color: white;
+        }
+
+        #subscriptions {
             background-color: #298D37; /* Green background */
             color: white; /* White text */
         }
 
-        #subscriptions:hover, #add-subscription:hover {
+        #subscriptions:hover {
             background-color: #3CA64E;
         }
 
@@ -79,11 +87,16 @@
 
         .main-content {
             flex-grow: 1;
-            padding: 20px 20px 20px 220px; /* Adjust left padding to account for sidebar */
+            padding: 20px 20px 20px 260px; /* Adjusted left padding to account for sidebar */
             margin-top: 60px; /* Below the top menu */
             display: flex;
             flex-direction: column;
-            width: calc(100% - 220px); /* Adjusted width */
+            width: calc(100% - 340px); /* Adjusted width */
+            
+        }
+
+        table {
+            background-color: #ffffff;
         }
 
         header {
@@ -115,6 +128,11 @@
             background-color: #298D37;
             color: #fff;
         }
+        .user {
+            text-decoration: underline;
+            cursor: pointer;
+        
+        }
 
         .active-true {
             color: green;
@@ -144,18 +162,18 @@
 </head>
 <body>
     <div class="top-menu">
-        <div class="time" id="time"></div>
+        <div class="user">charles.leclerc@gmail.com</div>
         <div class="logout" onclick="window.location.href='/logout'">Log out</div>
     </div>
     <div class="sidebar">
-        <button class="nav-button" onclick="window.location.href='/view_accounts'">View Accounts</button>
-        <button class="nav-button" onclick="window.location.href='/'">Add Payment Method</button>
-        <button class="nav-button" onclick="window.location.href='/transaction_history'">Transaction History</button>
-        <button class="nav-button" onclick="window.location.href='/make_payment'">Make Payment</button>
-        <button class="nav-button" id="payment-options" onclick="window.location.href='/payment_options'">Payment</button>
+        <button class="nav-button" id="transaction-history" onclick="window.location.href='/transaction_history'">Transaction History</button>
+        <button class="nav-button" id="make-payment" onclick="window.location.href='/make_payment'">Make Payment</button>
+        <button class="nav-button" id = "view" onclick="window.location.href='/view_accounts'">View Accounts</button>
         <button class="nav-button" id="subscriptions" onclick="window.location.href='/subscriptions'">Subscriptions</button>
+        <button class="nav-button" onclick="window.location.href='/add_payment'">Add Payment Method</button>
         <button class="nav-button" id="add-subscription" onclick="window.location.href='/add_subscription'">Add Subscription</button>
-        <div class="settings">
+        <button class="nav-button" id="inquiry" onclick="window.location.href='/inquiry'">Create Inquiry</button>
+<div class="settings">
             <span class="material-icons">Settings</span>
         </div>
     </div>
@@ -170,6 +188,7 @@
                         <th>Subscription ID</th>
                         <th>Service</th>
                         <th>Payment Frequency</th>
+                        <th>Renews on</th>
                         <th>Active</th>
                         <th>Actions</th>
                     </tr>
@@ -177,32 +196,38 @@
                 <tbody>
                     {% if subscriptions %}
                         {% for subscription in subscriptions %}
-                            <tr>
-                                <td>{{ subscription[0] }}</td>
-                                <td>{{ subscription[1] }}</td>
-                                <td>{{ subscription[2] }}</td>
-                                <td class="{{ 'active-true' if subscription[3] else 'active-false' }}">
-                                    {{ 'Active' if subscription[3] else 'Inactive' }}
-                                </td>
-                                <td>
-                                    {% if subscription[3] %}
-                                        <form action="{{ url_for('cancel_subscription', subscription_id=subscription[0]) }}" method="post">
-                                            <button type="submit">Cancel</button>
-                                        </form>
-                                    {% else %}
-                                        <form action="{{ url_for('activate_subscription', subscription_id=subscription[0]) }}" method="post">
-                                            <button type="submit">Activate</button>
-                                        </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
+                        <tr>
+                            <td>{{ subscription[0] }}</td>
+                            <td>{{ subscription[1] }}</td>
+                            <td>{{ subscription[2] }}</td>
+                            <td>{{ subscription[4] }}</td> <!-- Display renews_at value -->
+                            <td class="{{ 'active-true' if subscription[3] else 'active-false' }}">
+                                {{ 'Active' if subscription[3] else 'Inactive' }}
+                            </td>
+                            <td>
+                                {% if subscription[3] %}
+                                    <form action="{{ url_for('cancel_subscription', subscription_id=subscription[0]) }}" method="post">
+                                        <button type="submit">Cancel</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ url_for('activate_subscription', subscription_id=subscription[0]) }}" method="post">
+                                        <button type="submit">Activate</button>
+                                    </form>
+                                {% endif %}
+                                <!-- Add delete button form -->
+                                <form action="{{ url_for('delete_subscription', subscription_id=subscription[0]) }}" method="post">
+                                    <button type="submit" class="delete-button">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="5">No subscriptions found.</td>
+                            <td colspan="6">No subscriptions found.</td>
                         </tr>
                     {% endif %}
                 </tbody>
+                
             </table>
         </div>
     </div>

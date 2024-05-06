@@ -31,7 +31,7 @@
             z-index: 1000;
         }
         .logout {
-            margin-right: 5px;
+            margin-right: 10px;
             text-decoration: underline;
             cursor: pointer;
         }
@@ -48,6 +48,13 @@
             bottom: 0;
             overflow-y: auto;
         }
+        table {
+            margin-right: 20px;
+            margin-bottom: 20px;
+            background-color: #fff; /* Add this line to set white background */
+        }
+        
+
 
         .nav-button, .settings {
             background: none;
@@ -68,6 +75,10 @@
             color: white; /* White text */
         }
 
+        #transaction-history:hover {
+        background-color: #3CA64E;
+        }
+
         .settings {
             margin-top: auto;
             font-size: 16px;
@@ -82,11 +93,33 @@
             width: calc(100% - 220px); /* Adjusted width */
         }
 
+        .nav-button {
+            margin: 5px;
+        }
+        .nav-button:hover, .settings:hover {
+            background-color: #298D37;
+            color: white;
+        }
+
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+        
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px 20px 20px 260px; /* Adjusted left padding to account for sidebar */
+            margin-top: 60px; /* Below the top menu */
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 340px); /* Adjusted width */
+        }
+
+        .user {
+            text-decoration: underline;
+            cursor: pointer;
+        
         }
 
         .content {
@@ -115,17 +148,19 @@
 </head>
 <body>
     <div class="top-menu">
-        <div class="time" id="time"></div>
+        <div class="user">charles.leclerc@gmail.com</div>
         <div class="logout" onclick="window.location.href='/login'">Log out</div>
     </div>
     <div class="sidebar">
-        <button class="nav-button" onclick="window.location.href='/view_accounts'">View Accounts</button>
-        <button class="nav-button" onclick="window.location.href='/'">Add Payment Method</button>
+        
         <button class="nav-button" id="transaction-history" onclick="window.location.href='/transaction_history'">Transaction History</button>
         <button class="nav-button" id="make-payment" onclick="window.location.href='/make_payment'">Make Payment</button>
-        <button class="nav-button" id="payment-options" onclick="window.location.href='/payment_options'">Payment</button>
+        <button class="nav-button" id = "view" onclick="window.location.href='/view_accounts'">View Accounts</button>
         <button class="nav-button" id="subscriptions" onclick="window.location.href='/subscriptions'">Subscriptions</button>
+        <button class="nav-button" onclick="window.location.href='/add_payment'">Add Payment Method</button>
         <button class="nav-button" id="add-subscription" onclick="window.location.href='/add_subscription'">Add Subscription</button>
+        <button class="nav-button" id="inquiry" onclick="window.location.href='/inquiry'">Create Inquiry</button>
+
         <div class="settings">
             <span class="material-icons">Settings</span>
         </div>

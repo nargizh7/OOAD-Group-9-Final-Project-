@@ -31,7 +31,7 @@
             z-index: 1000;
         }
         .logout {
-            margin-right: 5px;
+            margin-right: 10px;
             text-decoration: underline;
             cursor: pointer;
         }
@@ -63,12 +63,20 @@
             align-items: center;
         }
 
-        #add-subscription, #subscriptions {
+        .nav-button {
+            margin: 5px;
+        }
+        .nav-button:hover, .settings:hover {
+            background-color: #298D37;
+            color: white;
+        }
+
+        #add-subscription {
             background-color: #298D37; /* Green background */
             color: white; /* White text */
         }
 
-        #add-subscription:hover, #subscriptions:hover {
+        #add-subscription:hover {
             background-color: #3CA64E;
         }
 
@@ -79,18 +87,19 @@
 
         .main-content {
             flex-grow: 1;
-            padding: 20px 20px 20px 220px; /* Adjust left padding to account for sidebar */
+            padding: 20px 20px 20px 260px; /* Adjusted left padding to account for sidebar */
             margin-top: 60px; /* Below the top menu */
             display: flex;
             flex-direction: column;
-            width: calc(100% - 220px); /* Adjusted width */
+            width: calc(100% - 340px); /* Adjusted width */
+            
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-left: 20px;
         }
 
         .content {
@@ -102,19 +111,40 @@
         .form-group {
             margin-bottom: 15px;
         }
+        .user {
+            text-decoration: underline;
+            cursor: pointer;
+        
+        }
 
         label {
             display: block;
             margin-bottom: 5px;
         }
 
-        input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        
+
+        
+        .form-section {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            width: 90%; /* Increased width */
+            margin-left: auto; /* Center the form section horizontally */
+            margin-right: auto; /* Center the form section horizontally */
+            margin-bottom: 20px;
         }
 
+        input[type="number"], input[type="text"], textarea, select {
+            width: 100%; /* Full width of the form section */
+            padding: 12px; /* Slightly increased padding for better aesthetics */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Ensures padding and border are included in the width */
+        }
+
+        /* General button styling */
         button {
             padding: 10px 20px;
             background-color: #298D37;
@@ -122,26 +152,29 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            width: 100%; /* Make the button full width of the form group */
+            margin-top: 10px; /* Added margin for spacing between form fields and button */
+            font-size: 16px; /* Increased font size for better readability */
         }
 
         button:hover {
-            background-color: #3CA64E;
+            background-color: #3CA64E; /* Slightly lighter green on hover for better user feedback */
         }
     </style>
 </head>
 <body>
     <div class="top-menu">
-        <div class="time" id="time"></div>
+        <div class="user">charles.leclerc@gmail.com</div>
         <div class="logout" onclick="window.location.href='/logout'">Log out</div>
     </div>
     <div class="sidebar">
-        <button class="nav-button" onclick="window.location.href='/make_payment'">Make Payment</button>
-        <button class="nav-button" id="payment-options" onclick="window.location.href='/payment_options'">Payment</button>
-        <button class="nav-button" onclick="window.location.href='/transaction_history'">Transaction History</button>
-        <button class="nav-button" onclick="window.location.href='/view_accounts'">View Accounts</button>
-        <button class="nav-button" onclick="window.location.href='/'">Add Payment Method</button>
+        <button class="nav-button" id="transaction-history" onclick="window.location.href='/transaction_history'">Transaction History</button>
+        <button class="nav-button" id="make-payment" onclick="window.location.href='/make_payment'">Make Payment</button>
+        <button class="nav-button" id = "view" onclick="window.location.href='/view_accounts'">View Accounts</button>
         <button class="nav-button" id="subscriptions" onclick="window.location.href='/subscriptions'">Subscriptions</button>
+        <button class="nav-button" onclick="window.location.href='/add_payment'">Add Payment Method</button>
         <button class="nav-button" id="add-subscription" onclick="window.location.href='/add_subscription'">Add Subscription</button>
+        <button class="nav-button" id="inquiry" onclick="window.location.href='/inquiry'">Create Inquiry</button>
         <div class="settings">
             <span class="material-icons">Settings</span>
         </div>
@@ -150,7 +183,7 @@
         <header>
             <h1>Add Subscription</h1>
         </header>
-        <div class="content">
+        <div class="form-section">
             <form action="{{ url_for('add_subscription') }}" method="post">
                 <div class="form-group">
                     <label for="service">Service:</label>
