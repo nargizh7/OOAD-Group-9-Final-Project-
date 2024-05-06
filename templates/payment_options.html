@@ -140,12 +140,13 @@
     </div>
     <div class="sidebar">
         <button class="nav-button" onclick="window.location.href='/view_accounts'">View Accounts</button>
-        <button class="nav-button" onclick="window.location.href='/'">Add Payment Method</button>
+        <button class="nav-button" onclick="window.location.href='/add_payment'">Add Payment Method</button>
         <button class="nav-button" onclick="window.location.href='/transaction_history'">Transaction History</button>
         <button class="nav-button" id="make-payment" onclick="window.location.href='/make_payment'">Make Payment</button>
-        <button class="nav-button" id="payment-options" onclick="window.location.href='/payment_options'">Payment</button>
+        <button class="nav-button" id="quick-payment" onclick="window.location.href='/payment_options'">Quick Payment</button> <!-- Corrected for unique ID and clearer naming -->
         <button class="nav-button" onclick="window.location.href='/subscriptions'">Subscriptions</button>
         <button class="nav-button" onclick="window.location.href='/add_subscription'">Add Subscription</button>
+        <button class="nav-button" id="payment-options" onclick="window.location.href='/payment_options'">Payment Options</button>
         <div class="settings">
             <span class="material-icons">Settings</span>
         </div>
